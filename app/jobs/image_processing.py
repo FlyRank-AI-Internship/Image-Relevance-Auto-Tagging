@@ -10,6 +10,33 @@ from app.services.vision_service import (
     VisionProcessingError,
     VisionService,
 )
+from app.jobs.job_store import update_job
+
+
+def run_batch_job(
+    job_id: str,
+    image_paths: list[Path],
+) -> None:
+    update_job(
+        job_id,
+        status="processing",
+    )
+
+    try:
+        result = process_batch(image_paths)
+
+        update_job(
+            job_id,
+            status="completed",
+            result=result.model_dump(),
+        )
+
+    except Exception as exc:
+        update_job(
+            job_id,
+            status="failed",
+            error=str(exc),
+        )
 
 
 def process_image_with_retry(

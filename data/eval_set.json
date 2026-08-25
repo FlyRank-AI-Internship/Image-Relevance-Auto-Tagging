@@ -1,0 +1,52 @@
+[
+  {
+    "post": "The behavior and habitat of red foxes",
+    "expected_subject": "red fox",
+    "expected_category": "animal"
+  },
+  {
+    "post": "How red foxes survive in forest environments",
+    "expected_subject": "red fox",
+    "expected_category": "animal"
+  },
+  {
+    "post": "How wolves survive in the wild",
+    "expected_subject": "wolf",
+    "expected_category": "animal"
+  },
+  {
+    "post": "Gray wolves living in rocky wilderness",
+    "expected_subject": "wolf",
+    "expected_category": "animal"
+  },
+  {
+    "post": "Understanding domestic dogs",
+    "expected_subject": "dog",
+    "expected_category": "animal"
+  },
+  {
+    "post": "Golden retrievers as domestic companion dogs",
+    "expected_subject": "dog",
+    "expected_category": "animal"
+  },
+  {
+    "post": "Cattle grazing on rural farmland",
+    "expected_subject": "cattle",
+    "expected_category": "animal"
+  },
+  {
+    "post": "Cows and calves grazing on a grassy hillside",
+    "expected_subject": "cattle",
+    "expected_category": "animal"
+  },
+  {
+    "post": "Life of lions in the African savanna",
+    "expected_subject": "lion",
+    "expected_category": "animal"
+  },
+  {
+    "post": "A male lion standing across the open savanna",
+    "expected_subject": "lion",
+    "expected_category": "animal"
+  }
+]

@@ -23,24 +23,40 @@ def subject_matches(
         return True
 
     aliases = {
-        "red fox": {
-            "fox",
-            "red fox",
-            "vulpes vulpes",
-        },
-        "wolf": {
-            "wolf",
-            "gray wolf",
-            "grey wolf",
-            "canis lupus",
-        },
-        "dog": {
-            "dog",
-            "domestic dog",
-            "canis familiaris",
-        },
-    }
-
+    "red fox": {
+        "fox",
+        "red fox",
+        "vulpes vulpes",
+    },
+    "wolf": {
+        "wolf",
+        "gray wolf",
+        "grey wolf",
+        "canis lupus",
+    },
+    "dog": {
+        "dog",
+        "domestic dog",
+        "golden retriever",
+        "retriever",
+        "canis familiaris",
+        "canis lupus familiaris",
+    },
+    "cattle": {
+        "cattle",
+        "cow",
+        "cows",
+        "calf",
+        "cattle on a hillside",
+        "cattle on a grassy hillside",
+    },
+    "lion": {
+        "lion",
+        "male lion",
+        "african lion",
+        "panthera leo",
+    },
+}
     for canonical, values in aliases.items():
         all_values = values | {canonical}
 

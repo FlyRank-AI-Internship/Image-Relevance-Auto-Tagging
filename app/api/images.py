@@ -19,6 +19,14 @@ from app.models.image import ImageRecord
 from app.services.embedding_service import EmbeddingService
 from app.services.vision_service import VisionProcessingError
 
+from fastapi import BackgroundTasks
+
+from app.jobs.image_processing import (
+    process_image_with_retry,
+    run_batch_job,
+)
+from app.jobs.job_store import create_job
+
 
 router = APIRouter(
     prefix="/images",
@@ -123,8 +131,13 @@ async def analyze_image(
         ) from exc
 
 
-@router.post("/process-batch")
-def process_uploaded_images():
+@router.post(
+    "/process-batch",
+    status_code=202,
+)
+def process_uploaded_images(
+    background_tasks: BackgroundTasks,
+):
     image_paths = [
         path
         for path in UPLOAD_DIR.iterdir()
@@ -138,4 +151,16 @@ def process_uploaded_images():
             detail="No uploaded images found.",
         )
 
-    return process_batch(image_paths)
+    job_id = create_job()
+
+    background_tasks.add_task(
+        run_batch_job,
+        job_id,
+        image_paths,
+    )
+
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "images": len(image_paths),
+    }
