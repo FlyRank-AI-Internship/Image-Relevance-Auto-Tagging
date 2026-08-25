@@ -13,3 +13,4 @@
 {"call_type":"embedding","provider":"gemini","model":"gemini-embedding-001","entity_type":"eval_post","entity_id":"cattle","input_units":null,"output_units":null,"estimated_cost":0.0,"created_at":"2026-08-25T10:42:49.562645Z"}
 {"call_type":"embedding","provider":"gemini","model":"gemini-embedding-001","entity_type":"eval_post","entity_id":"lion","input_units":null,"output_units":null,"estimated_cost":0.0,"created_at":"2026-08-25T10:42:50.024541Z"}
 {"call_type":"embedding","provider":"gemini","model":"gemini-embedding-001","entity_type":"eval_post","entity_id":"lion","input_units":null,"output_units":null,"estimated_cost":0.0,"created_at":"2026-08-25T10:42:50.596573Z"}
+{"call_type":"embedding","provider":"gemini","model":"gemini-embedding-001","entity_type":"post_check","entity_id":"1","input_units":null,"output_units":null,"estimated_cost":0.0,"created_at":"2026-08-25T10:54:59.203648Z"}

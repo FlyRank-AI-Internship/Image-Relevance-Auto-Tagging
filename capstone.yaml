@@ -26,10 +26,16 @@ endpoints:
     path: /posts/{post_id}/images
 
   - method: POST
-    path: /reviews
+    path: /posts/{post_id}/images/{image_id}/check
 
   - method: GET
-    path: /reviews
+    path: /suggestions/{suggestion_id}
+
+  - method: POST
+    path: /suggestions/{suggestion_id}/approve
+
+  - method: POST
+    path: /suggestions/{suggestion_id}/reject
 
   - method: GET
     path: /ai-costs
