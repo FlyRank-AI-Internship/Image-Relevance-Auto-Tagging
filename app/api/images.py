@@ -3,19 +3,20 @@ from uuid import uuid4
 
 from fastapi import (
     APIRouter,
+    Depends,
     File,
     HTTPException,
     UploadFile,
 )
+from sqlalchemy.orm import Session
 
+from app.core.database import get_db
 from app.jobs.image_processing import (
     process_batch,
     process_image_with_retry,
 )
-
-from app.jobs.image_processing import (
-    process_image_with_retry,
-)
+from app.models.image import ImageRecord
+from app.services.embedding_service import EmbeddingService
 from app.services.vision_service import VisionProcessingError
 
 
@@ -38,6 +39,7 @@ ALLOWED_CONTENT_TYPES = {
 @router.post("/analyze")
 async def analyze_image(
     file: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
@@ -64,20 +66,62 @@ async def analyze_image(
 
         path.write_bytes(contents)
 
+        # Step 1: Analyze image using Gemini Vision
         result = process_image_with_retry(path)
 
+        # Step 2: Generate embedding from image metadata
+        embedding_service = EmbeddingService()
+
+        embedding_text = (
+            f"{result.metadata.subject}. "
+            f"{result.metadata.caption}. "
+            f"{' '.join(result.metadata.attributes)}"
+        )
+
+        embedding = embedding_service.embed_text(
+            embedding_text,
+            entity_type="image",
+            entity_id=filename,
+        )
+
+        # Step 3: Store image metadata + embedding
+        record = ImageRecord(
+            filename=filename,
+            subject=result.metadata.subject,
+            category=result.metadata.category,
+            attributes=result.metadata.attributes,
+            caption=result.metadata.caption,
+            confidence=result.metadata.confidence,
+            needs_review=result.needs_review,
+            embedding=embedding,
+        )
+
+        db.add(record)
+        db.commit()
+        db.refresh(record)
+
         return {
+            "image_id": record.id,
             "filename": filename,
             **result.model_dump(),
         }
 
     except VisionProcessingError as exc:
+        db.rollback()
+
         raise HTTPException(
             status_code=502,
             detail=str(exc),
         ) from exc
 
-    
+    except Exception as exc:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Image processing failed: {exc}",
+        ) from exc
+
 
 @router.post("/process-batch")
 def process_uploaded_images():
