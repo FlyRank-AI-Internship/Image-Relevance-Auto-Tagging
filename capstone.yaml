@@ -2,18 +2,37 @@ run: "uvicorn app.main:app --host 0.0.0.0 --port 8000"
 seed: "python scripts_seed.py"
 test: "pytest"
 base_url: "http://localhost:8000"
+
 endpoints:
   - method: GET
     path: /health
+
+  - method: POST
+    path: /images/analyze
+
   - method: POST
     path: /images/process-batch
+
+  - method: GET
+    path: /jobs/{job_id}
+
+  - method: POST
+    path: /posts
+
+  - method: GET
+    path: /posts/{post_id}
+
   - method: GET
     path: /posts/{post_id}/images
+
   - method: POST
-    path: /posts/{post_id}/images/{image_id}/check
-  - method: POST
-    path: /suggestions/{suggestion_id}/approve
-  - method: POST
-    path: /suggestions/{suggestion_id}/reject
+    path: /reviews
+
+  - method: GET
+    path: /reviews
+
+  - method: GET
+    path: /ai-costs
+
   - method: POST
     path: /eval/run
