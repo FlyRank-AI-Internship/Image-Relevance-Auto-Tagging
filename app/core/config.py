@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/image_relevance"
 
     gemini_api_key: str = ""
-    vision_model: str = "gemini-2.5-flash"
+    vision_model: str = "gemini-3.6-flash"
     embedding_model: str = "gemini-embedding-001"
 
     vision_confidence_threshold: float = 0.70
