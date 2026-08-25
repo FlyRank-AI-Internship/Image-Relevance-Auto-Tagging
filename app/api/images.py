@@ -9,6 +9,11 @@ from fastapi import (
 )
 
 from app.jobs.image_processing import (
+    process_batch,
+    process_image_with_retry,
+)
+
+from app.jobs.image_processing import (
     process_image_with_retry,
 )
 from app.services.vision_service import VisionProcessingError
@@ -71,3 +76,22 @@ async def analyze_image(
             status_code=502,
             detail=str(exc),
         ) from exc
+
+    
+
+@router.post("/process-batch")
+def process_uploaded_images():
+    image_paths = [
+        path
+        for path in UPLOAD_DIR.iterdir()
+        if path.suffix.lower()
+        in {".jpg", ".jpeg", ".png", ".webp"}
+    ]
+
+    if not image_paths:
+        raise HTTPException(
+            status_code=404,
+            detail="No uploaded images found.",
+        )
+
+    return process_batch(image_paths)

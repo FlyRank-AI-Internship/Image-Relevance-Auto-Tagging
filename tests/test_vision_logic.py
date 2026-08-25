@@ -1,23 +1,35 @@
-from app.schemas.image_metadata import (
-    ImageAnalysisResult,
-    ImageMetadata,
-)
+from app.schemas.image_metadata import ImageMetadata
+from app.services.vision_service import build_analysis_result
 
 
-def test_low_confidence_can_be_flagged():
+def test_high_confidence_image_is_accepted():
+    metadata = ImageMetadata(
+        subject="red fox",
+        category="animal",
+        attributes=["orange fur"],
+        caption="A red fox standing outdoors.",
+        confidence=0.98,
+    )
+
+    result = build_analysis_result(metadata)
+
+    assert result.needs_review is False
+    assert result.review_reason is None
+
+
+def test_low_confidence_image_is_flagged():
     metadata = ImageMetadata(
         subject="unknown animal",
         category="animal",
         attributes=["fur"],
-        caption="An animal standing outdoors",
+        caption="A distant animal in vegetation.",
         confidence=0.42,
     )
 
-    result = ImageAnalysisResult(
-        metadata=metadata,
-        needs_review=True,
-        review_reason="Vision confidence below threshold",
-    )
+    result = build_analysis_result(metadata)
 
     assert result.needs_review is True
-    assert result.metadata.confidence == 0.42
+    assert result.review_reason == (
+        "Vision confidence below threshold: "
+        "0.42 < 0.70"
+    )

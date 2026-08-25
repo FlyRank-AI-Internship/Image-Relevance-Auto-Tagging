@@ -9,6 +9,7 @@ from app.schemas.image_metadata import (
     ImageAnalysisResult,
     ImageMetadata,
 )
+from app.services.cost_tracker import log_ai_call
 
 
 VISION_PROMPT = """
@@ -32,6 +33,30 @@ class VisionProcessingError(Exception):
     pass
 
 
+def build_analysis_result(
+    metadata: ImageMetadata,
+) -> ImageAnalysisResult:
+    needs_review = (
+        metadata.confidence
+        < settings.vision_confidence_threshold
+    )
+
+    review_reason = None
+
+    if needs_review:
+        review_reason = (
+            "Vision confidence below threshold: "
+            f"{metadata.confidence:.2f} < "
+            f"{settings.vision_confidence_threshold:.2f}"
+        )
+
+    return ImageAnalysisResult(
+        metadata=metadata,
+        needs_review=needs_review,
+        review_reason=review_reason,
+    )
+
+
 class VisionService:
     def __init__(self) -> None:
         if not settings.gemini_api_key:
@@ -47,7 +72,6 @@ class VisionService:
         self,
         image_path: str | Path,
     ) -> ImageAnalysisResult:
-
         path = Path(image_path)
 
         if not path.exists():
@@ -56,7 +80,6 @@ class VisionService:
             )
 
         image_bytes = path.read_bytes()
-
         mime_type = self._get_mime_type(path)
 
         try:
@@ -80,9 +103,43 @@ class VisionService:
                 response.text
             )
 
+            usage = response.usage_metadata
+
+            input_units = (
+                getattr(
+                    usage,
+                    "prompt_token_count",
+                    None,
+                )
+                if usage
+                else None
+            )
+
+            output_units = (
+                getattr(
+                    usage,
+                    "candidates_token_count",
+                    None,
+                )
+                if usage
+                else None
+            )
+
+            log_ai_call(
+                call_type="vision",
+                provider="gemini",
+                model=settings.vision_model,
+                entity_type="image",
+                entity_id=path.name,
+                input_units=input_units,
+                output_units=output_units,
+                estimated_cost=0.0,
+            )
+
         except ValidationError as exc:
             raise VisionProcessingError(
-                f"Vision model returned invalid structured output: {exc}"
+                "Vision model returned invalid "
+                f"structured output: {exc}"
             ) from exc
 
         except Exception as exc:
@@ -90,25 +147,7 @@ class VisionService:
                 f"Vision request failed: {exc}"
             ) from exc
 
-        needs_review = (
-            metadata.confidence
-            < settings.vision_confidence_threshold
-        )
-
-        review_reason = None
-
-        if needs_review:
-            review_reason = (
-                "Vision confidence below threshold: "
-                f"{metadata.confidence:.2f} < "
-                f"{settings.vision_confidence_threshold:.2f}"
-            )
-
-        return ImageAnalysisResult(
-            metadata=metadata,
-            needs_review=needs_review,
-            review_reason=review_reason,
-        )
+        return build_analysis_result(metadata)
 
     @staticmethod
     def _get_mime_type(path: Path) -> str:
